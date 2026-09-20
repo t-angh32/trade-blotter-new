@@ -82,6 +82,8 @@
 - **2026-09-20**: Created system data flow diagram document at `.\docs\system-design-flow.md` with Mermaid diagrams illustrating end-to-end data flow, non-blocking queue submission, background persistence, dynamic position derivation steps, and component responsibilities.
 - **2026-09-20**: Updated system architecture and OpenSpec planning files (`proposal.md`, `specs/backend-api/spec.md`, `design.md`, `tasks.md`, `system-design-flow.md`) to incorporate `ITradeCacheService`. Current day trades are cached in memory on `POST /trades` and served directly on `GET /trades` and `GET /positions` with zero database disk I/O hits on read requests.
 - **2026-09-20**: Applied OpenSpec change `trade-blotter-app` (14/14 tasks complete). Built .NET 8 Web API (`src/TradeBlotter.Api`), SQLite `TradeDbContext`, `ITradeCacheService`, `Channel<Trade>` queue, `TradePersistenceWorker`, and `TradesController`. Created Vue 3 + Pinia + Vite frontend (`src/TradeBlotter.Web`). Wrote and verified 8 xUnit unit tests (`src/TradeBlotter.Tests`) with 100% pass rate. Verified full-stack integration and updated `README.md`.
+- **2026-09-20**: Updated C# project files (`TradeBlotter.Api.csproj` and `TradeBlotter.Tests.csproj`) to explicitly target **`.NET 8.0`** (`net8.0`) per specification requirement. Verified build and xUnit test suite under `net8.0`.
+
 
 
 
