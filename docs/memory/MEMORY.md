@@ -59,6 +59,7 @@
 - [x] Create project memory file structure at `.\docs\memory\MEMORY.md`.
 - [x] Configure session memory persistence rules (`AGENTS.md`).
 - [x] Configure `.\docs\openspec\.agents\skills` as workspace skills in `.\.agents\skills.json`.
+- [x] Commit initial project documentation, agent guidelines, memory structure, and OpenSpec skills (`df4026f`).
 - [ ] Backend implementation (.NET 8 Web API + SQLite/LocalDB persistence).
 - [ ] Frontend implementation (Vue 3 + Pinia + Vite).
 - [ ] Unit tests for position calculation logic.
@@ -68,3 +69,6 @@
 
 ## 6. Progress History Log
 - **2026-09-20**: Created memory file structure at `.\docs\memory\MEMORY.md`. Added workspace session instructions in `AGENTS.md` requiring the AI agent to inspect `.\docs\memory\MEMORY.md` at session start and maintain ongoing progress updates. Registered OpenSpec skills from `.\docs\openspec\.agents` persistently via `.\.agents\skills.json` and `.\.agents\skills\`.
+- **2026-09-20**: Committed setup artifacts and workspace configurations to git repository (`df4026f`). Memory file updated and synchronized. Ready to begin full-stack implementation.
+- **2026-09-20**: Created OpenSpec change `trade-blotter-app` with sub-specs for backend API (`specs/backend-api/spec.md`) and frontend UI (`specs/frontend-ui/spec.md`), technical design (`design.md`), and tasks (`tasks.md`). Confirmed requirement that short positions ($\text{NetQty} < 0$) are permitted and updated calculation rules accordingly.
+
