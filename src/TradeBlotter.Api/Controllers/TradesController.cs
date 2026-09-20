@@ -11,16 +11,18 @@ public class TradesController : ControllerBase
     private readonly ITradeCacheService _tradeCache;
     private readonly ITradeQueue _tradeQueue;
     private readonly IPositionCalculatorService _positionCalculator;
-    private static int _tradeIdCounter = 0;
+    private readonly ITradeIdGenerator _idGenerator;
 
     public TradesController(
         ITradeCacheService tradeCache,
         ITradeQueue tradeQueue,
-        IPositionCalculatorService positionCalculator)
+        IPositionCalculatorService positionCalculator,
+        ITradeIdGenerator idGenerator)
     {
         _tradeCache = tradeCache;
         _tradeQueue = tradeQueue;
         _positionCalculator = positionCalculator;
+        _idGenerator = idGenerator;
     }
 
     [HttpPost]
@@ -33,7 +35,7 @@ public class TradesController : ControllerBase
 
         var trade = new Trade
         {
-            Id = Interlocked.Increment(ref _tradeIdCounter),
+            Id = _idGenerator.GetNextId(),
             Symbol = dto.Symbol.Trim().ToUpperInvariant(),
             Side = dto.Side,
             Quantity = Math.Round(dto.Quantity, 4),

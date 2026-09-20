@@ -13,6 +13,8 @@
 - **Framework**: C# / .NET 8 (Web API)
 - **In-Memory Cache**: `ITradeCacheService` maintaining current day's trades in memory for sub-millisecond `GET /trades` and `GET /positions` responses with zero DB disk I/O.
 - **Database / Persistence**: SQLite (`tradeblotter.db`) with background persistence worker (`TradePersistenceWorker`) and non-blocking in-memory queue (`Channel<Trade>`).
+- **ID Generator**: `ITradeIdGenerator` / `TradeIdGenerator` thread-safe singleton service initialized from `Max(Id)` in SQLite during startup.
+- **UTC Timestamp Converter**: EF Core `ValueConverter` on `Trade.Timestamp` ensuring `DateTimeKind.Utc` is preserved upon reload from SQLite for standard ISO 8601 `Z` JSON serialization.
 - **Endpoints**:
   - `POST /trades`: Validate trade, add immediately to in-memory trade cache, enqueue to concurrent channel, and return 201 Created without blocking on disk I/O.
   - `GET /trades`: Fetch current day's trades directly from in-memory trade cache.
@@ -23,10 +25,12 @@
 - **Framework**: Vue 3 (Composition API)
 - **State Management**: Pinia (`useTradeStore`)
 - **Build Tool**: Vite
-- **UI Components**:
-  - **Trade Entry Form**: Symbol, Side (Buy/Sell), Quantity, Price with validation (non-empty symbol, positive quantity/price).
-  - **Blotter Table**: Live trade history (newest first) displaying Timestamp, Symbol, Side, Quantity, Price, and Notional Value with visual Buy/Sell badges and column sorting.
-  - **Positions Panel**: Dynamically displays net quantity (supporting long & short positions) and average cost per symbol; updates reactively upon trade entry.
+- **UI Components & Layout**:
+  - **3-Column Trading Layout**: Compact fixed-size `New Trade Entry` (left), prominent `Live Trade Blotter` (center), expanded `Active Positions Summary` (right).
+  - **100vh Viewport Layout**: Desktop SPA constrained to 100vh with vertical panel scrolling and sticky table headers.
+  - **Trade Entry Form**: Symbol, Side (Buy/Sell), Quantity, Price with auto-focus after submit and global `Ctrl+Shift+E` focus hotkey.
+  - **Blotter Table**: Live trade history (newest first by default) displaying Timestamp, Symbol, Side, Quantity, Price, and Notional Value with multi-column sorting via `Ctrl` + click and priority badges (`▲₁`, `▼₂`).
+  - **Positions Panel**: Dynamically displays net quantity (supporting long & short positions) and average cost per symbol with multi-column sorting via `Ctrl` + click (`Symbol`, `Side`, `Net Qty`, `Avg Cost`).
 
 ---
 
@@ -51,6 +55,9 @@
 ## 4. Key Decisions & Conventions
 - **OpenSpec Integration**: Specifications, change tracking, and agent workflows are maintained under `docs/openspec/`.
 - **Database Tier Decoupling**: API endpoints enqueue trades into an in-memory concurrent `Channel<Trade>` (SingleReader/MultipleWriter) and return immediately. A background worker persists trades asynchronously to SQLite, preventing disk write locking on HTTP threads.
+- **Thread-Safe ID Generation**: Encapsulated in `ITradeIdGenerator` singleton service initialized at startup from `Max(Id)` in SQLite to prevent primary key collisions across application restarts.
+- **UTC Timezone Preservation**: Configured EF Core `ValueConverter` for `Timestamp` (`DateTimeKind.Utc`) to ensure JSON payload timezone fidelity across restarts.
+- **Multi-Column Grid Sorting**: Implemented `<kbd>Ctrl</kbd> + click` multi-column sorting with priority badges (`▲₁`, `▼₂`) across both Blotter and Position tables.
 - **Short Positions**: Supported. Weighted average cost tracks entry price for short positions and adjusts seamlessly on long/short position flips.
 - **Validation**: Strict input validation on frontend and backend for symbol presence and positive numerical values.
 - **Testing Focus**: Unit tests primarily targeting position derivation, short position math, and average cost logic.
@@ -83,6 +90,18 @@
 - **2026-09-20**: Updated system architecture and OpenSpec planning files (`proposal.md`, `specs/backend-api/spec.md`, `design.md`, `tasks.md`, `system-design-flow.md`) to incorporate `ITradeCacheService`. Current day trades are cached in memory on `POST /trades` and served directly on `GET /trades` and `GET /positions` with zero database disk I/O hits on read requests.
 - **2026-09-20**: Applied OpenSpec change `trade-blotter-app` (14/14 tasks complete). Built .NET 8 Web API (`src/TradeBlotter.Api`), SQLite `TradeDbContext`, `ITradeCacheService`, `Channel<Trade>` queue, `TradePersistenceWorker`, and `TradesController`. Created Vue 3 + Pinia + Vite frontend (`src/TradeBlotter.Web`). Wrote and verified 8 xUnit unit tests (`src/TradeBlotter.Tests`) with 100% pass rate. Verified full-stack integration and updated `README.md`.
 - **2026-09-20**: Updated C# project files (`TradeBlotter.Api.csproj` and `TradeBlotter.Tests.csproj`) to explicitly target **`.NET 8.0`** (`net8.0`) per specification requirement. Verified build and xUnit test suite under `net8.0`.
+- **2026-09-20**: Resolved SQLite primary key `UNIQUE constraint failed: Trades.Id` error. Refactored ID generation into a thread-safe singleton service (`ITradeIdGenerator` / `TradeIdGenerator`) injected into `TradesController.cs`, initialized from `Max(Id)` during startup in `Program.cs`, and configured `ValueGeneratedNever()` in `TradeDbContext.cs`. Cleaned up orphaned background process locks. Verified test suite (7/7 passing).
+- **2026-09-20**: Confirmed and reinforced default sort order in `TradeBlotter.vue` to display most recent trades first (`timestamp` descending, with `b.id - a.id` secondary tie-breaker). Verified frontend Vite build.
+- **2026-09-20**: Implemented multi-column sorting in `TradeBlotter.vue` by enabling `Ctrl` + click on column headers. Updated sort state to array of `SortRule` objects with priority indicators (e.g. `▲₁`, `▼₂`) in header labels. Verified frontend build and test suite.
+- **2026-09-20**: Added automatic focus return to the `Symbol` input element (`symbolInputRef.value.focus()`) in `TradeEntryForm.vue` immediately after trade submission to streamline rapid trade entry. Verified Vite build.
+- **2026-09-20**: Restructured frontend layout in `App.vue` and `style.css` to a 3-column widescreen grid (`310px 1fr 360px`). Positioned `Live Trade Blotter` in the center column between `New Trade Entry` (left) and `Active Positions Summary` (right) for optimal trading desk screen real-estate usage. Verified Vite build.
+- **2026-09-20**: Expanded `Active Positions Summary` column width to `440px` in `style.css` and streamlined table header titles in `PositionsPanel.vue` (`Symbol`, `Side`, `Net Qty`, `Avg Cost`), completely eliminating horizontal scrollbars. Verified Vite build.
+- **2026-09-20**: Constrained SPA height to 100vh on desktop viewports in `style.css` (`html, body { height: 100%; overflow: hidden; }`). Configured `.grid-layout`, `.card-panel`, and `.table-wrapper` with flexbox/grid container constraints so vertical scrollbars automatically appear within `Live Trade Blotter` and `Active Positions Summary` panels as trade/position lists grow or browser height is resized, with sticky table headers. Verified Vite build.
+- **2026-09-20**: Configured `.col-entry` and `.col-entry .card-panel` with `height: auto` in `style.css` so `New Trade Entry` renders as a compact, fixed-size card matching its input form content, while the blotter and position panels remain full-height scrollable containers. Verified Vite build.
+- **2026-09-20**: Implemented global keyboard shortcut `Ctrl+Shift+E` in `TradeEntryForm.vue` (`handleKeyDown`) to instantly focus and select the `Symbol` input field from anywhere in the application. Added shortcut hint badge to panel header. Verified Vite build.
+- **2026-09-20**: Implemented multi-column sorting in `PositionsPanel.vue` by enabling `Ctrl` + click on column headers (`Symbol`, `Side`, `Net Qty`, `Avg Cost`). Added `PositionSortRule` state array, priority badges (`▲₁`, `▼₂`), and secondary symbol tie-breaker. Verified Vite build and xUnit test suite.
+- **2026-09-20**: Fixed post-restart GMT timestamp display bug caused by EF Core SQLite reading timestamps as `DateTimeKind.Unspecified` (which caused `System.Text.Json` to omit the `Z` suffix and JS `new Date()` to parse UTC strings as local time). Added EF Core `ValueConverter` for `Timestamp` (`DateTime.SpecifyKind(v, DateTimeKind.Utc)`) in `TradeDbContext.cs` and defensive `Z` suffix normalization in `TradeBlotter.vue` (`formatDate`). Verified build and test suite.
+
 
 
 

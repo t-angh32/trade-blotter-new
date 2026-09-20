@@ -32,16 +32,20 @@ onMounted(async () => {
     </header>
 
     <main class="grid-layout">
-      <!-- Left Column: Trade Entry Form -->
-      <aside>
+      <!-- Column 1: New Trade Entry -->
+      <aside class="col-entry">
         <TradeEntryForm />
       </aside>
 
-      <!-- Right Column: Positions Panel & Live Blotter -->
-      <section>
-        <PositionsPanel />
+      <!-- Column 2: Live Trade Blotter -->
+      <section class="col-blotter">
         <TradeBlotter />
       </section>
+
+      <!-- Column 3: Active Positions Summary -->
+      <aside class="col-positions">
+        <PositionsPanel />
+      </aside>
     </main>
   </div>
 </template>

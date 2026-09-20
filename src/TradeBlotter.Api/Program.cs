@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using TradeBlotter.Api.Controllers;
 using TradeBlotter.Api.Data;
 using TradeBlotter.Api.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,7 @@ builder.Services.AddDbContext<TradeDbContext>(options =>
     options.UseSqlite(connectionString));
 
 // Singletons & Services
+builder.Services.AddSingleton<ITradeIdGenerator, TradeIdGenerator>();
 builder.Services.AddSingleton<ITradeCacheService, TradeCacheService>();
 builder.Services.AddSingleton<ITradeQueue, TradeQueue>();
 builder.Services.AddSingleton<IPositionCalculatorService, PositionCalculatorService>();
@@ -42,8 +45,12 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<TradeDbContext>();
     var cacheService = scope.ServiceProvider.GetRequiredService<ITradeCacheService>();
+    var idGenerator = scope.ServiceProvider.GetRequiredService<ITradeIdGenerator>();
 
     await dbContext.Database.EnsureCreatedAsync();
+
+    var maxId = await dbContext.Trades.Select(t => (int?)t.Id).MaxAsync() ?? 0;
+    idGenerator.Initialize(maxId);
 
     var todayUtc = DateTime.UtcNow.Date;
     var existingTodayTrades = await dbContext.Trades

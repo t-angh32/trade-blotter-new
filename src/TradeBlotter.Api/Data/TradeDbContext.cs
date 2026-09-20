@@ -16,11 +16,18 @@ public class TradeDbContext : DbContext
         modelBuilder.Entity<Trade>(entity =>
         {
             entity.HasKey(t => t.Id);
+            entity.Property(t => t.Id).ValueGeneratedNever();
             entity.Property(t => t.Symbol).IsRequired().HasMaxLength(20);
+
             entity.Property(t => t.Side).HasConversion<string>();
             entity.Property(t => t.Quantity).HasPrecision(18, 4);
             entity.Property(t => t.Price).HasPrecision(18, 4);
-            entity.Property(t => t.Timestamp).IsRequired();
+            entity.Property(t => t.Timestamp)
+                .IsRequired()
+                .HasConversion(
+                    v => v.ToUniversalTime(),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                );
         });
     }
 }

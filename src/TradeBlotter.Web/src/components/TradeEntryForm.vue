@@ -1,9 +1,26 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, nextTick, onMounted, onUnmounted } from 'vue';
 import { useTradeStore } from '../stores/tradeStore';
 import { TradeSide } from '../types';
 
 const tradeStore = useTradeStore();
+const symbolInputRef = ref<HTMLInputElement | null>(null);
+
+const handleKeyDown = (e: KeyboardEvent) => {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+    e.preventDefault();
+    symbolInputRef.value?.focus();
+    symbolInputRef.value?.select();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
 
 const form = reactive({
   symbol: '',
@@ -65,6 +82,9 @@ const handleSubmit = async () => {
     form.quantity = null;
     form.price = null;
 
+    await nextTick();
+    symbolInputRef.value?.focus();
+
     setTimeout(() => {
       successMsg.value = '';
     }, 4000);
@@ -76,6 +96,9 @@ const handleSubmit = async () => {
   <div class="card-panel">
     <div class="card-header">
       <h2 class="card-title">New Trade Entry</h2>
+      <span style="font-size: 0.7rem; color: var(--text-muted);">
+        <kbd style="background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px;">Ctrl+Shift+E</kbd>
+      </span>
     </div>
 
     <form @submit.prevent="handleSubmit">
@@ -84,6 +107,7 @@ const handleSubmit = async () => {
         <label class="form-label" for="symbol">Symbol</label>
         <input
           id="symbol"
+          ref="symbolInputRef"
           v-model="form.symbol"
           type="text"
           class="form-control"
