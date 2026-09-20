@@ -7,9 +7,11 @@ Traders require immediate visibility into trade executions and real-time derived
 ## What Changes
 
 - Introduce **Backend API Tier** using .NET 8 Web API:
-  - `POST /trades`: Endpoint to receive, validate, and enqueue trade execution records into a non-blocking concurrent queue.
-  - `GET /trades`: Endpoint to return all persisted trade execution records in reverse chronological order (newest first).
-  - `GET /positions`: Endpoint to dynamically calculate and return net share quantities and weighted average cost per symbol from trade history, filtering out symbols with net zero positions.
+  - **In-Memory Trade Cache (`ITradeCacheService`)**: Maintains current day's trades in memory. On `POST /trades`, valid trades are added to the cache immediately and enqueued to the database queue.
+  - `POST /trades`: Endpoint to receive, validate, insert into in-memory trade cache, and enqueue into non-blocking queue.
+  - `GET /trades`: Endpoint returning current day's trades directly from in-memory trade cache (sub-millisecond latency, zero DB disk I/O).
+  - `GET /positions`: Endpoint dynamically deriving net share quantities and weighted average costs directly from cached trades, filtering out net zero position symbols.
+
 - Introduce **Database Persistence Tier**:
   - Dedicated background queue processor (`BackgroundService` with `System.Threading.Channels.Channel<Trade>` / `ConcurrentQueue<Trade>`) responsible for reading from the queue and writing trades asynchronously to SQLite DB.
   - Decouples API HTTP response latencies from database file locking and disk write operations.

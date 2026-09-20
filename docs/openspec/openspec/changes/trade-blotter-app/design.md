@@ -23,9 +23,13 @@ See `proposal.md` for motivation and overall scope. The objective is to build a 
 
 ## Tier 1 Design Considerations: Backend (.NET 8 Web API)
 
-### 1. Data Access & Persistence Layer
-- **Decision**: Use Entity Framework Core with SQLite (`tradeblotter.db`).
-- **Rationale**: SQLite provides real database persistence across API restarts with zero external setup overhead (unlike SQL Server LocalDB which varies by OS/machine).
+### 1. Data Access, In-Memory Caching & Persistence Layer
+- **Decision**: Implement an In-Memory Trade Cache (`ITradeCacheService`) in the Backend API tier and use Entity Framework Core with SQLite (`tradeblotter.db`) for background persistence.
+- **In-Memory Cache Architecture**:
+  - `ITradeCacheService` maintains current day's trades in memory using a thread-safe concurrent collection (`ConcurrentBag<Trade>` / `ConcurrentQueue<Trade>`).
+  - **Startup**: Seeded from database on app startup for today's trades.
+  - **Write**: On `POST /trades`, validated trades are immediately added to the cache and enqueued to `Channel<Trade>`.
+  - **Read (`GET /trades` & `GET /positions`)**: Served 100% from the in-memory cache with zero database disk I/O hits.
 - **Entity Model**:
   ```csharp
   public class Trade
@@ -38,6 +42,7 @@ See `proposal.md` for motivation and overall scope. The objective is to build a 
       public DateTime Timestamp { get; set; } // UTC
   }
   ```
+
 
 ### 2. Dynamic Position Derivation Logic
 - **Decision**: Enforce dynamic position derivation inside a dedicated domain service (`PositionCalculatorService`).

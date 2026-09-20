@@ -7,22 +7,23 @@ Provides a RESTful C# .NET 8 Web API for receiving trade submissions, fetching t
 ## ADDED Requirements
 
 ### Requirement: Trade Submission Endpoint
-The system SHALL expose a `POST /trades` HTTP endpoint accepting a trade execution payload containing `Symbol`, `Side`, `Quantity`, and `Price`. The system MUST validate inputs, assign a UTC timestamp and unique identifier, persist the trade to the database, and return an HTTP status code of 201 Created with the persisted trade record.
+The system SHALL expose a `POST /trades` HTTP endpoint accepting a trade execution payload containing `Symbol`, `Side`, `Quantity`, and `Price`. Upon successful validation, the system MUST immediately insert the trade into the in-memory trade cache (`ITradeCacheService`), enqueue it to the concurrent persistence queue (`Channel<Trade>`), and return an HTTP status code of 201 Created with the trade record.
 
 #### Scenario: Valid trade submission
 - **WHEN** a client sends a `POST /trades` request with valid `Symbol` ("AAPL"), `Side` ("Buy"), `Quantity` (100), and `Price` (150.50)
-- **THEN** the system persists the trade with a UTC timestamp and unique ID, returning HTTP status 201 Created with the full trade JSON object
+- **THEN** the system inserts the trade into the in-memory trade cache, enqueues it for background DB persistence, and returns HTTP status 201 Created
 
 #### Scenario: Invalid trade submission validation
 - **WHEN** a client sends a `POST /trades` request with empty `Symbol`, missing `Side`, or non-positive `Quantity` or `Price`
 - **THEN** the system rejects the submission with HTTP status 400 Bad Request and validation error messages
 
-### Requirement: Trade History Retrieval Endpoint
-The system SHALL expose a `GET /trades` HTTP endpoint returning a list of all persisted trade records ordered by `Timestamp` in descending order (newest first).
+### Requirement: Trade History Retrieval Endpoint via In-Memory Cache
+The system SHALL expose a `GET /trades` HTTP endpoint returning current day's trades directly from the in-memory trade cache ordered by `Timestamp` in descending order (newest first), without accessing the database persistence tier on read requests.
 
-#### Scenario: Retrieve trade history
+#### Scenario: Retrieve trade history from in-memory cache
 - **WHEN** a client sends a `GET /trades` request
-- **THEN** the system returns HTTP status 200 OK with an array of trade objects ordered from newest to oldest timestamp
+- **THEN** the system reads current day's trades directly from the in-memory trade cache and returns HTTP status 200 OK with zero database disk I/O
+
 
 ### Requirement: Dynamic Position Calculation Endpoint
 The system SHALL expose a `GET /positions` HTTP endpoint that dynamically derives the current net position and weighted average execution cost per symbol from all trades in history. Positions MUST NOT be stored separately in the database.
