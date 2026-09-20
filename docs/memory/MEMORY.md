@@ -101,6 +101,7 @@
 - **2026-09-20**: Implemented global keyboard shortcut `Ctrl+Shift+E` in `TradeEntryForm.vue` (`handleKeyDown`) to instantly focus and select the `Symbol` input field from anywhere in the application. Added shortcut hint badge to panel header. Verified Vite build.
 - **2026-09-20**: Implemented multi-column sorting in `PositionsPanel.vue` by enabling `Ctrl` + click on column headers (`Symbol`, `Side`, `Net Qty`, `Avg Cost`). Added `PositionSortRule` state array, priority badges (`▲₁`, `▼₂`), and secondary symbol tie-breaker. Verified Vite build and xUnit test suite.
 - **2026-09-20**: Fixed post-restart GMT timestamp display bug caused by EF Core SQLite reading timestamps as `DateTimeKind.Unspecified` (which caused `System.Text.Json` to omit the `Z` suffix and JS `new Date()` to parse UTC strings as local time). Added EF Core `ValueConverter` for `Timestamp` (`DateTime.SpecifyKind(v, DateTimeKind.Utc)`) in `TradeDbContext.cs` and defensive `Z` suffix normalization in `TradeBlotter.vue` (`formatDate`). Verified build and test suite.
+- **2026-09-20**: Committed UI layout enhancements, multi-column grid sorting, auto-focus hotkeys, `ITradeIdGenerator` singleton, and UTC timestamp persistence fixes (`35c345e`).
 
 
 
