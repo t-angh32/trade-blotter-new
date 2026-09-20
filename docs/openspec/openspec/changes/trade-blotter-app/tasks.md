@@ -4,9 +4,11 @@
 
 - [ ] 1.1 Scaffold .NET 8 Web API project under `src/TradeBlotter.Api` and xUnit test project under `src/TradeBlotter.Tests`; verify `dotnet build` succeeds.
 - [ ] 1.2 Implement `Trade` domain model, `CreateTradeDto`, and SQLite `TradeDbContext` for trade persistence; verify database initialization.
-- [ ] 1.3 Implement `PositionCalculatorService` for dynamic net position and weighted average cost derivation (omitting net zero positions); verify calculation behavior.
-- [ ] 1.4 Create `TradesController` with `POST /trades`, `GET /trades`, and `GET /positions` endpoints with input validation and CORS policies; verify endpoints via HTTP test/curl.
-- [ ] 1.5 Write xUnit unit tests in `src/TradeBlotter.Tests` covering single buys, weighted average costs on mixed trades, and net zero omission; verify `dotnet test` passes clean.
+- [ ] 1.3 Implement `Channel<Trade>` concurrent queue and `TradePersistenceWorker` (`BackgroundService`) for non-blocking asynchronous database writes; verify background persistence from queue.
+- [ ] 1.4 Implement `PositionCalculatorService` for dynamic net position and weighted average cost derivation (handling short positions and omitting net zero positions); verify calculation behavior.
+- [ ] 1.5 Create `TradesController` with `POST /trades`, `GET /trades`, and `GET /positions` endpoints integrating non-blocking queue submission; verify endpoints via HTTP test/curl.
+- [ ] 1.6 Write xUnit unit tests in `src/TradeBlotter.Tests` covering single buys, short positions, weighted average costs on mixed trades, and net zero omission; verify `dotnet test` passes clean.
+
 
 ## 2. Frontend Implementation (Vue 3 + Pinia + Vite)
 

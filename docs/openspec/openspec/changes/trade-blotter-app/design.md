@@ -64,6 +64,21 @@ See `proposal.md` for motivation and overall scope. The objective is to build a 
 
 ---
 
+## Tier 3 Design Considerations: Database Persistence Tier & Concurrent Queue
+
+### 1. Architecture & Non-Blocking Queue Flow
+- **Decision**: Use `System.Threading.Channels.Channel<Trade>` (SingleReader, MultipleWriter) as an in-memory concurrent channel registered as a singleton service.
+- **Write Pipeline**:
+  1. `POST /trades` endpoint receives trade DTO, performs validation, assigns ID/Timestamp.
+  2. Endpoint calls `_channel.Writer.TryWrite(trade)` (or `WriteAsync`) to enqueue the trade non-blockingly.
+  3. API immediately responds to HTTP request (201 Created) without awaiting disk write/file locks.
+  4. Background worker `TradePersistenceWorker` (`BackgroundService`) continuously reads from `_channel.Reader.ReadAllAsync()` and persists trades asynchronously to SQLite DB using EF Core.
+
+### 2. SQLite Concurrency & File Lock Mitigation
+- **Rationale**: Isolating all DB write operations to a single background worker thread reading sequentially from the concurrent channel completely eliminates SQLite database write locks, transaction collisions, and disk I/O bottlenecks on main API controller threads.
+
+---
+
 ## Tier 2 Design Considerations: Frontend (Vue 3 + Pinia + Vite)
 
 ### 1. Architecture & State Management
