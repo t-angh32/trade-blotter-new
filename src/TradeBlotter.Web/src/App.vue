@@ -18,6 +18,18 @@ onMounted(async () => {
       <div class="header-title">
         <h1>Trade Blotter</h1>
         <span class="badge-trading-desk">Live Desk</span>
+        <span
+          class="badge-connection"
+          :class="{
+            'status-connected': tradeStore.connectionStatus === 'Connected',
+            'status-reconnecting': tradeStore.connectionStatus === 'Reconnecting',
+            'status-disconnected': tradeStore.connectionStatus === 'Disconnected'
+          }"
+          :title="`SignalR Status: ${tradeStore.connectionStatus}`"
+        >
+          <span class="status-dot"></span>
+          {{ tradeStore.connectionStatus }}
+        </span>
       </div>
       <div style="display: flex; gap: 0.5rem; align-items: center;">
         <button

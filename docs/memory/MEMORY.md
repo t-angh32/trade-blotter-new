@@ -11,26 +11,29 @@
 
 ### Backend
 - **Framework**: C# / .NET 8 (Web API)
+- **Real-Time Push Notifications**: ASP.NET Core SignalR hub (`TradeHub`) mapped to `/hubs/trades` broadcasting `TradeExecuted` events with `JsonStringEnumConverter` payload serialization.
 - **In-Memory Cache**: `ITradeCacheService` maintaining current day's trades in memory for sub-millisecond `GET /trades` and `GET /positions` responses with zero DB disk I/O.
 - **Database / Persistence**: SQLite (`tradeblotter.db`) with background persistence worker (`TradePersistenceWorker`) and non-blocking in-memory queue (`Channel<Trade>`).
 - **ID Generator**: `ITradeIdGenerator` / `TradeIdGenerator` thread-safe singleton service initialized from `Max(Id)` in SQLite during startup.
 - **UTC Timestamp Converter**: EF Core `ValueConverter` on `Trade.Timestamp` ensuring `DateTimeKind.Utc` is preserved upon reload from SQLite for standard ISO 8601 `Z` JSON serialization.
-- **Endpoints**:
-  - `POST /trades`: Validate trade, add immediately to in-memory trade cache, enqueue to concurrent channel, and return 201 Created without blocking on disk I/O.
+- **Endpoints & Hubs**:
+  - `POST /trades`: Validate trade, add immediately to in-memory trade cache, enqueue to concurrent channel, broadcast via SignalR `TradeHub`, and return 201 Created without blocking on disk I/O.
   - `GET /trades`: Fetch current day's trades directly from in-memory trade cache.
   - `GET /positions`: Fetch derived positions calculated directly from cached trades.
+  - `WS /hubs/trades`: SignalR WebSocket/HTTP long-polling hub endpoint.
 
 
 ### Frontend
 - **Framework**: Vue 3 (Composition API)
-- **State Management**: Pinia (`useTradeStore`)
+- **State Management**: Pinia (`useTradeStore`) with `@microsoft/signalr` integration, auto-reconnection, trade deduplication, and position recalculation.
 - **Build Tool**: Vite
 - **UI Components & Layout**:
   - **3-Column Trading Layout**: Compact fixed-size `New Trade Entry` (left), prominent `Live Trade Blotter` (center), expanded `Active Positions Summary` (right).
   - **100vh Viewport Layout**: Desktop SPA constrained to 100vh with vertical panel scrolling and sticky table headers.
   - **Trade Entry Form**: Symbol, Side (Buy/Sell), Quantity, Price with auto-focus after submit and global `Ctrl+Shift+E` focus hotkey.
-  - **Blotter Table**: Live trade history (newest first by default) displaying Timestamp, Symbol, Side, Quantity, Price, and Notional Value with multi-column sorting via `Ctrl` + click and priority badges (`▲₁`, `▼₂`).
+  - **Blotter Table**: Live trade history (newest first by default) displaying Timestamp, Symbol, Side (`BUY`/`SELL` badges), Quantity, Price, and Notional Value with multi-column sorting via `Ctrl` + click and priority badges (`▲₁`, `▼₂`).
   - **Positions Panel**: Dynamically displays net quantity (supporting long & short positions) and average cost per symbol with multi-column sorting via `Ctrl` + click (`Symbol`, `Side`, `Net Qty`, `Avg Cost`).
+  - **Connection Status Indicator**: Header pill badge (`Connected`, `Reconnecting`, `Disconnected`) displaying real-time SignalR hub connection health.
 
 ---
 
@@ -55,6 +58,7 @@
 ## 4. Key Decisions & Conventions
 - **OpenSpec Integration**: Specifications, change tracking, and agent workflows are maintained under `docs/openspec/`.
 - **Database Tier Decoupling**: API endpoints enqueue trades into an in-memory concurrent `Channel<Trade>` (SingleReader/MultipleWriter) and return immediately. A background worker persists trades asynchronously to SQLite, preventing disk write locking on HTTP threads.
+- **Real-Time Push Architecture**: ASP.NET Core SignalR hub (`TradeHub`) broadcasts trade executions across all connected browser clients. `@microsoft/signalr` in Pinia handles auto-reconnect with full state resynchronization.
 - **Thread-Safe ID Generation**: Encapsulated in `ITradeIdGenerator` singleton service initialized at startup from `Max(Id)` in SQLite to prevent primary key collisions across application restarts.
 - **UTC Timezone Preservation**: Configured EF Core `ValueConverter` for `Timestamp` (`DateTimeKind.Utc`) to ensure JSON payload timezone fidelity across restarts.
 - **Multi-Column Grid Sorting**: Implemented `<kbd>Ctrl</kbd> + click` multi-column sorting with priority badges (`▲₁`, `▼₂`) across both Blotter and Position tables.
@@ -76,6 +80,7 @@
 - [x] Backend implementation (.NET 8 Web API + SQLite persistence + Channel worker + In-memory trade cache).
 - [x] Frontend implementation (Vue 3 + Pinia + Vite).
 - [x] Unit tests for position calculation and short position logic (8/8 xUnit tests passing).
+- [x] OpenSpec change `realtime-trade-updates` (SignalR Hub + real-time multi-client blotter & position updates + enum serialization fix).
 - [x] Final verification, README setup instructions, and deployment readiness.
 
 ---
@@ -105,6 +110,9 @@
 - **2026-09-20**: Reconciled commit hash references in `MEMORY.md` to align with rewritten git branch history and verified complete removal of restricted name references across all tracked files and commit logs.
 - **2026-09-20**: Synced delta specs to main specs (`backend-api`, `database-tier`, `frontend-ui`) and archived completed OpenSpec change `trade-blotter-app` to `docs/openspec/openspec/changes/archive/2026-09-20-trade-blotter-app`.
 - **2026-09-20**: Committed `README.md` documentation updates (`371f8f0`) highlighting structured logging, keyboard shortcuts (`Ctrl+Shift+E`), and multi-column grid sorting.
+- **2026-09-21**: Formulated and applied OpenSpec change `realtime-trade-updates` (9/9 tasks complete). Added ASP.NET Core SignalR hub (`TradeHub` mapped to `/hubs/trades`), CORS credentials support, and `IHubContext` broadcasting on `POST /trades`. Integrated `@microsoft/signalr` in Vue 3 Pinia store (`useTradeStore`), auto-reconnection with full resync, trade deduplication, position auto-recalculation, and a live connection badge (`Connected`, `Reconnecting`, `Disconnected`) in `App.vue`. Verified backend (`dotnet test`) and frontend (`npm run build`).
+- **2026-09-21**: Resolved SignalR enum serialization issue where `Trade.Side` rendered as `0` or `1` instead of `BUY`/`SELL` badges. Added `.AddJsonProtocol(options => options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()))` to SignalR setup in `Program.cs`, and added defensive `formatSide` enum normalization in `tradeStore.ts` and `TradeBlotter.vue`. Verified build and test suite.
+- **2026-09-21**: Synced delta specs to main specs (`backend-api`, `frontend-ui`) and archived completed OpenSpec change `realtime-trade-updates` to `docs/openspec/openspec/changes/archive/2026-09-21-realtime-trade-updates`.
 
 
 

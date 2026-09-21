@@ -89,6 +89,12 @@ const formatNumber = (val: number): string => {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(val);
 };
 
+const formatSide = (side: any): string => {
+  if (side === 0 || side === '0' || String(side).toLowerCase() === 'buy') return 'Buy';
+  if (side === 1 || side === '1' || String(side).toLowerCase() === 'sell') return 'Sell';
+  return String(side);
+};
+
 const formatDate = (dateStr: string): string => {
   try {
     const normalizedStr = (dateStr.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateStr))
@@ -164,8 +170,8 @@ const formatDate = (dateStr: string): string => {
             <td style="font-family: monospace; font-size: 0.8125rem;">{{ formatDate(trade.timestamp) }}</td>
             <td style="font-weight: 700; color: #ffffff;">{{ trade.symbol }}</td>
             <td>
-              <span class="side-badge" :class="String(trade.side).toLowerCase()">
-                {{ String(trade.side).toUpperCase() }}
+              <span class="side-badge" :class="formatSide(trade.side).toLowerCase()">
+                {{ formatSide(trade.side).toUpperCase() }}
               </span>
             </td>
             <td>{{ formatNumber(trade.quantity) }}</td>

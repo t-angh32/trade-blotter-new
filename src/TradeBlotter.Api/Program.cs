@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TradeBlotter.Api.Controllers;
 using TradeBlotter.Api.Data;
+using TradeBlotter.Api.Hubs;
 using TradeBlotter.Api.Services;
 
 
@@ -11,6 +12,12 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
 
@@ -27,14 +34,15 @@ builder.Services.AddSingleton<ITradeQueue, TradeQueue>();
 builder.Services.AddSingleton<IPositionCalculatorService, PositionCalculatorService>();
 builder.Services.AddHostedService<TradePersistenceWorker>();
 
-// CORS Policy for Vue Vite Frontend (default http://localhost:5173)
+// CORS Policy for Vue Vite Frontend (supporting SignalR WebSockets and credentials)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -63,5 +71,6 @@ using (var scope = app.Services.CreateScope())
 // 3. Configure HTTP Pipeline
 app.UseCors("AllowAll");
 app.MapControllers();
+app.MapHub<TradeHub>("/hubs/trades");
 
 app.Run();

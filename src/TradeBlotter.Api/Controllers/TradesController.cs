@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using TradeBlotter.Api.Hubs;
 using TradeBlotter.Api.Models;
 using TradeBlotter.Api.Services;
 
@@ -12,17 +14,20 @@ public class TradesController : ControllerBase
     private readonly ITradeQueue _tradeQueue;
     private readonly IPositionCalculatorService _positionCalculator;
     private readonly ITradeIdGenerator _idGenerator;
+    private readonly IHubContext<TradeHub> _hubContext;
 
     public TradesController(
         ITradeCacheService tradeCache,
         ITradeQueue tradeQueue,
         IPositionCalculatorService positionCalculator,
-        ITradeIdGenerator idGenerator)
+        ITradeIdGenerator idGenerator,
+        IHubContext<TradeHub> hubContext)
     {
         _tradeCache = tradeCache;
         _tradeQueue = tradeQueue;
         _positionCalculator = positionCalculator;
         _idGenerator = idGenerator;
+        _hubContext = hubContext;
     }
 
     [HttpPost]
@@ -48,6 +53,9 @@ public class TradesController : ControllerBase
 
         // 2. Enqueue non-blockingly for background SQLite DB persistence
         await _tradeQueue.QueueTradeAsync(trade);
+
+        // 3. Broadcast real-time SignalR notification to all connected blotter clients
+        await _hubContext.Clients.All.SendAsync("TradeExecuted", trade);
 
         return CreatedAtAction(nameof(GetTrades), new { id = trade.Id }, trade);
     }
