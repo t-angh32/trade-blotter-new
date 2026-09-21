@@ -125,6 +125,11 @@ Detailed architecture flowcharts and sequence diagrams can be found in [`docs/sy
    - Symbols with a net quantity of zero ($\text{NetQty} == 0$) are omitted from position API responses.
 4. **In-Memory Cache & Concurrent Queue**:
    - Isolates API HTTP request threads from SQLite disk file locks and provides sub-millisecond read responses for blotter and positions views.
+5. **Keyboard Shortcuts & Rapid Entry**:
+   - Added global keyboard shortcut `<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd>` to instantly focus the Symbol input field from anywhere in the UI, alongside post-submission input auto-focus to streamline high-velocity trade entry.
+6. **Multi-Column Grid Sorting**:
+   - Enabled `<kbd>Ctrl</kbd> + click` multi-column sorting with visual priority indicators (`▲₁`, `▼₂`) across both the Trade Blotter and Positions tables, allowing traders to sort by multiple criteria simultaneously (e.g., primary sort by Side, secondary by Net Qty).
+
 
 ---
 
@@ -133,3 +138,4 @@ Detailed architecture flowcharts and sequence diagrams can be found in [`docs/sy
 Given additional development time, the following production enhancements would be added:
 - **SignalR WebSockets**: Push real-time trade execution notifications to multiple connected client blotters without REST polling.
 - **Distributed Cache & Queue**: Upgrade in-memory cache and `Channel<T>` to Redis and Apache Kafka for horizontal multi-node scaling across 20,000+ concurrent connections.
+- **Structured Logging**: Implement structured logging (e.g., Serilog / OpenTelemetry) across API endpoints, background workers, and client error handlers for enhanced observability.

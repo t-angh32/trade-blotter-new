@@ -104,6 +104,10 @@
 - **2026-09-20**: Committed UI layout enhancements, multi-column grid sorting, auto-focus hotkeys, `ITradeIdGenerator` singleton, and UTC timestamp persistence fixes (`8602249`).
 - **2026-09-20**: Reconciled commit hash references in `MEMORY.md` to align with rewritten git branch history and verified complete removal of restricted name references across all tracked files and commit logs.
 - **2026-09-20**: Synced delta specs to main specs (`backend-api`, `database-tier`, `frontend-ui`) and archived completed OpenSpec change `trade-blotter-app` to `docs/openspec/openspec/changes/archive/2026-09-20-trade-blotter-app`.
+- **2026-09-20**: Committed `README.md` documentation updates (`371f8f0`) highlighting structured logging, keyboard shortcuts (`Ctrl+Shift+E`), and multi-column grid sorting.
+
+
+
 
 
 
