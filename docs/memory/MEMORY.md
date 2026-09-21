@@ -103,6 +103,7 @@
 - **2026-09-20**: Fixed post-restart GMT timestamp display bug caused by EF Core SQLite reading timestamps as `DateTimeKind.Unspecified` (which caused `System.Text.Json` to omit the `Z` suffix and JS `new Date()` to parse UTC strings as local time). Added EF Core `ValueConverter` for `Timestamp` (`DateTime.SpecifyKind(v, DateTimeKind.Utc)`) in `TradeDbContext.cs` and defensive `Z` suffix normalization in `TradeBlotter.vue` (`formatDate`). Verified build and test suite.
 - **2026-09-20**: Committed UI layout enhancements, multi-column grid sorting, auto-focus hotkeys, `ITradeIdGenerator` singleton, and UTC timestamp persistence fixes (`8602249`).
 - **2026-09-20**: Reconciled commit hash references in `MEMORY.md` to align with rewritten git branch history and verified complete removal of restricted name references across all tracked files and commit logs.
+- **2026-09-20**: Synced delta specs to main specs (`backend-api`, `database-tier`, `frontend-ui`) and archived completed OpenSpec change `trade-blotter-app` to `docs/openspec/openspec/changes/archive/2026-09-20-trade-blotter-app`.
 
 
 
