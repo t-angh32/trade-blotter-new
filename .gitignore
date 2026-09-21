@@ -360,3 +360,14 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# SQLite local databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Frontend build outputs & dependencies
+dist/
+node_modules/
+

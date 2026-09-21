@@ -65,11 +65,11 @@
 - [x] Configure session memory persistence rules (`AGENTS.md`).
 - [x] Configure `.\docs\openspec\.agents\skills` as workspace skills in `.\.agents\skills.json`.
 - [x] Commit initial project documentation, agent guidelines, memory structure, and OpenSpec skills (`df4026f`).
-- [x] Formulate and commit OpenSpec change `trade-blotter-app` with proposal, sub-specs, technical design, and task breakdown (`47c5318`).
-- [ ] Backend implementation (.NET 8 Web API + SQLite persistence + Channel worker).
-- [ ] Frontend implementation (Vue 3 + Pinia + Vite).
-- [ ] Unit tests for position calculation and short position logic.
-- [ ] Final verification, README setup instructions, and deployment readiness.
+- [x] Formulate and commit OpenSpec change `trade-blotter-app` with proposal, sub-specs, technical design, and task breakdown (`47c5318`, `13858cc`, `2655c8d`).
+- [x] Backend implementation (.NET 8 Web API + SQLite persistence + Channel worker + In-memory trade cache).
+- [x] Frontend implementation (Vue 3 + Pinia + Vite).
+- [x] Unit tests for position calculation and short position logic (8/8 xUnit tests passing).
+- [x] Final verification, README setup instructions, and deployment readiness.
 
 ---
 
@@ -81,6 +81,8 @@
 - **2026-09-20**: Committed OpenSpec change artifacts to branch `feature/00-design` (`47c5318`). Evaluated 20k connection scalability considerations (SignalR, Redis, Kafka) and confirmed application target scope. Synchronized `MEMORY.md`.
 - **2026-09-20**: Created system data flow diagram document at `.\docs\system-design-flow.md` with Mermaid diagrams illustrating end-to-end data flow, non-blocking queue submission, background persistence, dynamic position derivation steps, and component responsibilities.
 - **2026-09-20**: Updated system architecture and OpenSpec planning files (`proposal.md`, `specs/backend-api/spec.md`, `design.md`, `tasks.md`, `system-design-flow.md`) to incorporate `ITradeCacheService`. Current day trades are cached in memory on `POST /trades` and served directly on `GET /trades` and `GET /positions` with zero database disk I/O hits on read requests.
+- **2026-09-20**: Applied OpenSpec change `trade-blotter-app` (14/14 tasks complete). Built .NET 8 Web API (`src/TradeBlotter.Api`), SQLite `TradeDbContext`, `ITradeCacheService`, `Channel<Trade>` queue, `TradePersistenceWorker`, and `TradesController`. Created Vue 3 + Pinia + Vite frontend (`src/TradeBlotter.Web`). Wrote and verified 8 xUnit unit tests (`src/TradeBlotter.Tests`) with 100% pass rate. Verified full-stack integration and updated `README.md`.
+
 
 
 

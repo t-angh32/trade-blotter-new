@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TradeBlotter.Api/TradeBlotter.Api.csproj" />
+  <Project Path="TradeBlotter.Tests/TradeBlotter.Tests.csproj" />
+</Solution>
