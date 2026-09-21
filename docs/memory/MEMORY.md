@@ -71,8 +71,8 @@
 - [x] Create project memory file structure at `.\docs\memory\MEMORY.md`.
 - [x] Configure session memory persistence rules (`AGENTS.md`).
 - [x] Configure `.\docs\openspec\.agents\skills` as workspace skills in `.\.agents\skills.json`.
-- [x] Commit initial project documentation, agent guidelines, memory structure, and OpenSpec skills (`df4026f`).
-- [x] Formulate and commit OpenSpec change `trade-blotter-app` with proposal, sub-specs, technical design, and task breakdown (`47c5318`, `13858cc`, `2655c8d`).
+- [x] Commit initial project documentation, agent guidelines, memory structure, and OpenSpec skills (`5193a8a`).
+- [x] Formulate and commit OpenSpec change `trade-blotter-app` with proposal, sub-specs, technical design, and task breakdown (`0165161`, `4e8f699`, `b9ae778`).
 - [x] Backend implementation (.NET 8 Web API + SQLite persistence + Channel worker + In-memory trade cache).
 - [x] Frontend implementation (Vue 3 + Pinia + Vite).
 - [x] Unit tests for position calculation and short position logic (8/8 xUnit tests passing).
@@ -82,10 +82,10 @@
 
 ## 6. Progress History Log
 - **2026-09-20**: Created memory file structure at `.\docs\memory\MEMORY.md`. Added workspace session instructions in `AGENTS.md` requiring the AI agent to inspect `.\docs\memory\MEMORY.md` at session start and maintain ongoing progress updates. Registered OpenSpec skills from `.\docs\openspec\.agents` persistently via `.\.agents\skills.json` and `.\.agents\skills\`.
-- **2026-09-20**: Committed setup artifacts and workspace configurations to git repository (`df4026f`). Memory file updated and synchronized. Ready to begin full-stack implementation.
+- **2026-09-20**: Committed setup artifacts and workspace configurations to git repository (`5193a8a`). Memory file updated and synchronized. Ready to begin full-stack implementation.
 - **2026-09-20**: Created OpenSpec change `trade-blotter-app` with sub-specs for backend API (`specs/backend-api/spec.md`) and frontend UI (`specs/frontend-ui/spec.md`), technical design (`design.md`), and tasks (`tasks.md`). Confirmed requirement that short positions ($\text{NetQty} < 0$) are permitted and updated calculation rules accordingly.
 - **2026-09-20**: Added Database Persistence Tier capability to `proposal.md` and added sub-spec `specs/database-tier/spec.md`. The database tier introduces an in-memory concurrent queue (`Channel<Trade>`) and background worker (`TradePersistenceWorker`) to decouple API HTTP latency from SQLite disk writes and prevent locking. Updated `design.md` and `tasks.md`.
-- **2026-09-20**: Committed OpenSpec change artifacts to branch `feature/00-design` (`47c5318`). Evaluated 20k connection scalability considerations (SignalR, Redis, Kafka) and confirmed application target scope. Synchronized `MEMORY.md`.
+- **2026-09-20**: Committed OpenSpec change artifacts to branch `feature/00-design` (`0165161`). Evaluated 20k connection scalability considerations (SignalR, Redis, Kafka) and confirmed application target scope. Synchronized `MEMORY.md`.
 - **2026-09-20**: Created system data flow diagram document at `.\docs\system-design-flow.md` with Mermaid diagrams illustrating end-to-end data flow, non-blocking queue submission, background persistence, dynamic position derivation steps, and component responsibilities.
 - **2026-09-20**: Updated system architecture and OpenSpec planning files (`proposal.md`, `specs/backend-api/spec.md`, `design.md`, `tasks.md`, `system-design-flow.md`) to incorporate `ITradeCacheService`. Current day trades are cached in memory on `POST /trades` and served directly on `GET /trades` and `GET /positions` with zero database disk I/O hits on read requests.
 - **2026-09-20**: Applied OpenSpec change `trade-blotter-app` (14/14 tasks complete). Built .NET 8 Web API (`src/TradeBlotter.Api`), SQLite `TradeDbContext`, `ITradeCacheService`, `Channel<Trade>` queue, `TradePersistenceWorker`, and `TradesController`. Created Vue 3 + Pinia + Vite frontend (`src/TradeBlotter.Web`). Wrote and verified 8 xUnit unit tests (`src/TradeBlotter.Tests`) with 100% pass rate. Verified full-stack integration and updated `README.md`.
@@ -101,7 +101,8 @@
 - **2026-09-20**: Implemented global keyboard shortcut `Ctrl+Shift+E` in `TradeEntryForm.vue` (`handleKeyDown`) to instantly focus and select the `Symbol` input field from anywhere in the application. Added shortcut hint badge to panel header. Verified Vite build.
 - **2026-09-20**: Implemented multi-column sorting in `PositionsPanel.vue` by enabling `Ctrl` + click on column headers (`Symbol`, `Side`, `Net Qty`, `Avg Cost`). Added `PositionSortRule` state array, priority badges (`▲₁`, `▼₂`), and secondary symbol tie-breaker. Verified Vite build and xUnit test suite.
 - **2026-09-20**: Fixed post-restart GMT timestamp display bug caused by EF Core SQLite reading timestamps as `DateTimeKind.Unspecified` (which caused `System.Text.Json` to omit the `Z` suffix and JS `new Date()` to parse UTC strings as local time). Added EF Core `ValueConverter` for `Timestamp` (`DateTime.SpecifyKind(v, DateTimeKind.Utc)`) in `TradeDbContext.cs` and defensive `Z` suffix normalization in `TradeBlotter.vue` (`formatDate`). Verified build and test suite.
-- **2026-09-20**: Committed UI layout enhancements, multi-column grid sorting, auto-focus hotkeys, `ITradeIdGenerator` singleton, and UTC timestamp persistence fixes (`35c345e`).
+- **2026-09-20**: Committed UI layout enhancements, multi-column grid sorting, auto-focus hotkeys, `ITradeIdGenerator` singleton, and UTC timestamp persistence fixes (`8602249`).
+- **2026-09-20**: Reconciled commit hash references in `MEMORY.md` to align with rewritten git branch history and verified complete removal of restricted name references across all tracked files and commit logs.
 
 
 
